@@ -1,0 +1,109 @@
+/* src/styles.css */
+
+/* ===============================
+   GLOBAL
+=============================== */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #2c3e50;
+}
+
+/* ===============================
+   CONTAINERS ET CARDS
+=============================== */
+.container {
+    max-width: 900px;
+}
+
+.card {
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* ===============================
+   LISTES
+=============================== */
+.list-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.list-group-item:hover {
+    background-color: #e9ecef;
+}
+
+/* ===============================
+   BOUTONS
+=============================== */
+.btn {
+    border-radius: 0.3rem;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: #fff;
+}
+
+/* ===============================
+   FORMULAIRES
+=============================== */
+form input,
+form select,
+form textarea {
+    border-radius: 0.3rem;
+    border: 1px solid #ced4da;
+    padding: 0.4rem 0.6rem;
+}
+
+form input:focus,
+form select:focus,
+form textarea:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 5px rgba(0,123,255,0.25);
+}
+
+/* ===============================
+   VISIBILITÉ
+=============================== */
+.d-none {
+    display: none !important;
+}
+
+/* ===============================
+   RESPONSIVE
+=============================== */
+@media (max-width: 576px) {
+    .list-group-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .list-group-item span {
+        margin-top: 0.5rem;
+    }
+}
