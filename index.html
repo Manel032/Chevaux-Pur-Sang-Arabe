@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chevaux Pur-Sang Arabe Tunisiens</title>
+
+  <!-- Bootstrap -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background-color: #f5f7fa;
+    }
+
+    .navbar-brand {
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #0d6efd, #198754);
+      color: white;
+      padding: 60px 20px;
+      border-radius: 15px;
+    }
+
+    .card {
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+
+    footer {
+      background: #111;
+      color: #bbb;
+      padding: 15px 0;
+      margin-top: 40px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+  <div class="container">
+    <a class="navbar-brand" href="#">🐎 Chevaux Tunisiens</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="menu">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="#chevaux">Chevaux</a></li>
+        <li class="nav-item"><a class="nav-link" href="#owners">Owners</a></li>
+        <li class="nav-item"><a class="nav-link" href="#jockeys">Jockeys</a></li>
+        <li class="nav-item"><a class="nav-link" href="#courses">Courses</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="container my-4">
+  <div class="hero text-center">
+    <h1>Chevaux Pur-Sang Arabe Tunisiens</h1>
+    <p class="mt-3">
+      Plateforme professionnelle pour la gestion des chevaux,
+      propriétaires, jockeys et courses
+    </p>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="container">
+
+  <!-- CHEVAUX -->
+  <section id="chevaux" class="mb-4">
+    <div class="card p-4">
+      <h3 class="mb-3">🐎 Chevaux</h3>
+      <div id="chevaux-list" class="list-group">
+        <div class="text-muted">Chargement des chevaux...</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OWNERS -->
+  <section id="owners" class="mb-4">
+    <div class="card p-4">
+      <h3 class="mb-3">👤 Owners</h3>
+      <div id="owners-list" class="list-group">
+        <div class="text-muted">Chargement des owners...</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- JOCKEYS -->
+  <section id="jockeys" class="mb-4">
+    <div class="card p-4">
+      <h3 class="mb-3">🏇 Jockeys</h3>
+      <div id="jockeys-list" class="list-group">
+        <div class="text-muted">Chargement des jockeys...</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COURSES -->
+  <section id="courses" class="mb-4">
+    <div class="card p-4">
+      <h3 class="mb-3">🏆 Courses</h3>
+      <div id="courses-list" class="list-group">
+        <div class="text-muted">Chargement des courses...</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="text-center">
+  <div class="container">
+    © 2025 — Projet Chevaux Pur-Sang Arabe Tunisiens  
+    
+  </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script type="module">
+const api = axios.create({
+    baseURL: "http://localhost/chevaux-arabes/backend",
+    headers: { "Content-Type": "application/json" }
+});
+
+// Sections
+function showSection(name) {
+    document.querySelectorAll('.section').forEach(sec => sec.classList.add('d-none'));
+    document.getElementById(name).classList.remove('d-none');
+    hideForm(name);
+    switch(name){
+        case 'chevaux': loadChevaux(); break;
+        case 'owners': loadOwners(); break;
+        case 'jockeys': loadJockeys(); break;
+        case 'courses': loadCourses(); break;
+    }
+}
+function showForm(section){ document.getElementById(section+'-form').classList.remove('d-none'); }
+function hideForm(section){ document.getElementById(section+'-form').classList.add('d-none'); 
+    if(section==='chevaux') document.getElementById('form-cheval').reset();
+    if(section==='owners') document.getElementById('form-owner').reset();
+    if(section==='jockeys') document.getElementById('form-jockey').reset();
+    if(section==='courses') document.getElementById('form-course').reset();
+}
+
+// -----------------------
+// Chevaux CRUD
+async function loadChevaux(){
+    const list = document.getElementById('chevaux-list');
+    list.innerHTML='Chargement...';
+    try{
+        const res = await api.get('/chevaux');
+        list.innerHTML='';
+        res.data.data.forEach(c=>{
+            const li = document.createElement('li');
+            li.className='list-group-item d-flex justify-content-between align-items-center';
+            li.innerHTML=`${c.nom} (${c.age || 'N/A'} ans) - Owner: ${c.owner_id} 
+                <span>
+                    <button class="btn btn-sm btn-warning me-1" onclick="editCheval(${c.id})">Modifier</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteCheval(${c.id})">Supprimer</button>
+                </span>`;
+            list.appendChild(li);
+        });
+    }catch(err){ console.error(err); list.innerHTML='Erreur'; }
+}
+
+document.getElementById('form-cheval').addEventListener('submit', async e=>{
+    e.preventDefault();
+    const id = document.getElementById('cheval-id').value;
+    const data = {
+        nom: document.getElementById('cheval-nom').value,
+        ddn: document.getElementById('cheval-ddn').value,
+        pays: document.getElementById('cheval-pays').value,
+        owner_id: document.getElementById('cheval-owner').value,
+        jockey_id: document.getElementById('cheval-jockey').value
+    };
+    try{
+        if(id) await api.put(`/chevaux/${id}`, data);
+        else await api.post('/chevaux', data);
+        loadChevaux();
+        hideForm('chevaux');
+    }catch(err){ console.error(err); }
+});
+async function editCheval(id){
+    const res = await api.get(`/chevaux/${id}`);
+    const c=res.data.data;
+    document.getElementById('cheval-id').value=c.id;
+    document.getElementById('cheval-nom').value=c.nom;
+    document.getElementById('cheval-ddn').value=c.ddn;
+    document.getElementById('cheval-pays').value=c.pays;
+    document.getElementById('cheval-owner').value=c.owner_id;
+    document.getElementById('cheval-jockey').value=c.jockey_id;
+    showForm('chevaux');
+}
+async function deleteCheval(id){
+    if(confirm('Voulez-vous supprimer ce cheval ?')){
+        await api.delete(`/chevaux/${id}`);
+        loadChevaux();
+    }
+}
+
+// -----------------------
+// Owners CRUD
+async function loadOwners(){
+    const list=document.getElementById('owners-list');
+    list.innerHTML='Chargement...';
+    try{
+        const res=await api.get('/owners');
+        list.innerHTML='';
+        res.data.data.forEach(o=>{
+            const li=document.createElement('li');
+            li.className='list-group-item d-flex justify-content-between align-items-center';
+            li.innerHTML=`${o.nom} - ${o.pays} - ${o.email || ''} 
+                <span>
+                    <button class="btn btn-sm btn-warning me-1" onclick="editOwner(${o.id})">Modifier</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteOwner(${o.id})">Supprimer</button>
+                </span>`;
+            list.appendChild(li);
+        });
+    }catch(err){ console.error(err); list.innerHTML='Erreur'; }
+}
+document.getElementById('form-owner').addEventListener('submit', async e=>{
+    e.preventDefault();
+    const id=document.getElementById('owner-id').value;
+    const data={
+        nom: document.getElementById('owner-nom').value,
+        pays: document.getElementById('owner-pays').value,
+        email: document.getElementById('owner-email').value,
+        tel: document.getElementById('owner-tel').value
+    };
+    try{
+        if(id) await api.put(`/owners/${id}`, data);
+        else await api.post('/owners', data);
+        loadOwners(); hideForm('owners');
+    }catch(err){ console.error(err); }
+});
+async function editOwner(id){
+    const res=await api.get(`/owners/${id}`);
+    const o=res.data.data;
+    document.getElementById('owner-id').value=o.id;
+    document.getElementById('owner-nom').value=o.nom;
+    document.getElementById('owner-pays').value=o.pays;
+    document.getElementById('owner-email').value=o.email;
+    document.getElementById('owner-tel').value=o.tel;
+    showForm('owners');
+}
+async function deleteOwner(id){
+    if(confirm('Supprimer ce owner ?')){
+        await api.delete(`/owners/${id}`);
+        loadOwners();
+    }
+}
+
+// -----------------------
+// Jockeys CRUD
+async function loadJockeys(){
+    const list=document.getElementById('jockeys-list');
+    list.innerHTML='Chargement...';
+    try{
+        const res=await api.get('/jockeys');
+        list.innerHTML='';
+        res.data.data.forEach(j=>{
+            const li=document.createElement('li');
+            li.className='list-group-item d-flex justify-content-between align-items-center';
+            li.innerHTML=`${j.nom} - ${j.pays} - ${j.email || ''} 
+                <span>
+                    <button class="btn btn-sm btn-warning me-1" onclick="editJockey(${j.id})">Modifier</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteJockey(${j.id})">Supprimer</button>
+                </span>`;
+            list.appendChild(li);
+        });
+    }catch(err){ console.error(err); list.innerHTML='Erreur'; }
+}
+document.getElementById('form-jockey').addEventListener('submit', async e=>{
+    e.preventDefault();
+    const id=document.getElementById('jockey-id').value;
+    const data={
+        nom: document.getElementById('jockey-nom').value,
+        pays: document.getElementById('jockey-pays').value,
+        email: document.getElementById('jockey-email').value,
+        tel: document.getElementById('jockey-tel').value
+    };
+    try{
+        if(id) await api.put(`/jockeys/${id}`, data);
+        else await api.post('/jockeys', data);
+        loadJockeys(); hideForm('jockeys');
+    }catch(err){ console.error(err); }
+});
+async function editJockey(id){
+    const res=await api.get(`/jockeys/${id}`);
+    const j=res.data.data;
+    document.getElementById('jockey-id').value=j.id;
+    document.getElementById('jockey-nom').value=j.nom;
+    document.getElementById('jockey-pays').value=j.pays;
+    document.getElementById('jockey-email').value=j.email;
+    document.getElementById('jockey-tel').value=j.tel;
+    showForm('jockeys');
+}
+async function deleteJockey(id){
+    if(confirm('Supprimer ce jockey ?')){
+        await api.delete(`/jockeys/${id}`);
+        loadJockeys();
+    }
+}
+
+// -----------------------
+// Courses CRUD
+async function loadCourses(){
+    const list=document.getElementById('courses-list');
+    list.innerHTML='Chargement...';
+    try{
+        const res=await api.get('/courses');
+        list.innerHTML='';
+        res.data.data.forEach(c=>{
+            const li=document.createElement('li');
+            li.className='list-group-item d-flex justify-content-between align-items-center';
+            li.innerHTML=`${c.nom} - Date: ${c.date} - Cheval ID: ${c.cheval_id} 
+                <span>
+                    <button class="btn btn-sm btn-warning me-1" onclick="editCourse(${c.id})">Modifier</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteCourse(${c.id})">Supprimer</button>
+                </span>`;
+            list.appendChild(li);
+        });
+    }catch(err){ console.error(err); list.innerHTML='Erreur'; }
+}
+document.getElementById('form-course').addEventListener('submit', async e=>{
+    e.preventDefault();
+    const id=document.getElementById('course-id').value;
+    const data={
+        nom: document.getElementById('course-nom').value,
+        date: document.getElementById('course-date').value,
+        cheval_id: document.getElementById('course-cheval').value
+    };
+    try{
+        if(id) await api.put(`/courses/${id}`, data);
+        else await api.post('/courses', data);
+        loadCourses(); hideForm('courses');
+    }catch(err){ console.error(err); }
+});
+async function editCourse(id){
+    const res=await api.get(`/courses/${id}`);
+    const c=res.data.data;
+    document.getElementById('course-id').value=c.id;
+    document.getElementById('course-nom').value=c.nom;
+    document.getElementById('course-date').value=c.date;
+    document.getElementById('course-cheval').value=c.cheval_id;
+    showForm('courses');
+}
+async function deleteCourse(id){
+    if(confirm('Supprimer cette course ?')){
+        await api.delete(`/courses/${id}`);
+        loadCourses();
+    }
+}
+
+// Afficher Chevaux par défaut
+showSection('chevaux');
+</script>
+</body>
+</html>
