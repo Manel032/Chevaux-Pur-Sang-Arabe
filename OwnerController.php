@@ -1,184 +1,82 @@
 <?php
+// OwnerController.php - Controller for Owner
+
+require_once 'Owner.php';
+
 class OwnerController {
-
-    private Owner $model;
-
-    public function __construct(Owner $model){
-        $this->model = $model;
-    }
-
-    /* =========================
-       LISTE TOUS LES OWNERS
-    ========================== */
-    public function index(){
+    
+    public function index() {
         try {
-            $owners = $this->model->all();
-            echo json_encode([
-                "success" => true,
-                "data" => $owners
-            ]);
-        } catch (PDOException $e) {
-            http_response_code(500);
-            echo json_encode([
-                "success" => false,
-                "error" => $e->getMessage()
-            ]);
+            $owners = Owner::getAll();
+            $this->jsonResponse(array('success' => true, 'data' => $owners));
+        } catch (Exception $e) {
+            $this->jsonResponse(array('success' => false, 'message' => $e->getMessage()), 500);
         }
     }
 
-    /* =========================
-       AFFICHER UN OWNER (avec ses chevaux)
-    ========================== */
-    public function show(int $id){
+    public function show($id) {
         try {
-            $owner = $this->model->show($id);
-            if($owner){
-                $owner["chevaux"] = $this->model->horses($id);
-                echo json_encode([
-                    "success" => true,
-                    "data" => $owner
-                ]);
+            $owner = Owner::getById($id);
+            if ($owner) {
+                $horses = Owner::getHorses($id);
+                $this->jsonResponse(array('success' => true, 'data' => $owner, 'horses' => $horses));
             } else {
-                http_response_code(404);
-                echo json_encode([
-                    "success" => false,
-                    "error" => "Owner non trouvé"
-                ]);
+                $this->jsonResponse(array('success' => false, 'message' => 'Propriétaire non trouvé'), 404);
             }
-        } catch (PDOException $e) {
-            http_response_code(500);
-            echo json_encode([
-                "success" => false,
-                "error" => $e->getMessage()
-            ]);
+        } catch (Exception $e) {
+            $this->jsonResponse(array('success' => false, 'message' => $e->getMessage()), 500);
         }
     }
 
-    /* =========================
-       AJOUTER UN OWNER
-    ========================== */
-    public function store(){
+    public function store($data) {
         try {
-            $data = json_decode(file_get_contents("php://input"), true);
-            $success = $this->model->create($data);
-            echo json_encode(["success" => $success]);
-        } catch (PDOException $e) {
-            http_response_code(500);
-            echo json_encode([
-                "success" => false,
-                "error" => $e->getMessage()
-            ]);
+            if (empty($data['nom'])) {
+                $this->jsonResponse(array('success' => false, 'message' => 'Le nom est obligatoire'), 400);
+                return;
+            }
+
+            $id = Owner::create($data);
+            $this->jsonResponse(array('success' => true, 'message' => 'Propriétaire créé avec succès', 'id' => $id), 201);
+        } catch (Exception $e) {
+            $this->jsonResponse(array('success' => false, 'message' => $e->getMessage()), 500);
         }
     }
 
-    /* =========================
-       MODIFIER UN OWNER
-    ========================== */
-    public function update(int $id){
+    public function update($id, $data) {
         try {
-            $data = json_decode(file_get_contents("php://input"), true);
-            $success = $this->model->update($id, $data);
-            echo json_encode(["success" => $success]);
-        } catch (PDOException $e) {
-            http_response_code(500);
-            echo json_encode([
-                "success" => false,
-                "error" => $e->getMessage()
-            ]);
+            if (empty($data['nom'])) {
+                $this->jsonResponse(array('success' => false, 'message' => 'Le nom est obligatoire'), 400);
+                return;
+            }
+
+            $success = Owner::update($id, $data);
+            if ($success) {
+                $this->jsonResponse(array('success' => true, 'message' => 'Propriétaire mis à jour avec succès'));
+            } else {
+                $this->jsonResponse(array('success' => false, 'message' => 'Impossible de mettre à jour le propriétaire'), 400);
+            }
+        } catch (Exception $e) {
+            $this->jsonResponse(array('success' => false, 'message' => $e->getMessage()), 500);
         }
     }
 
-    /* =========================
-       SUPPRIMER UN OWNER
-    ========================== */
-    public function destroy(int $id){
+    public function destroy($id) {
         try {
-            $success = $this->model->delete($id);
-            echo json_encode(["success" => $success]);
-        } catch (PDOException $e) {
-            http_response_code(500);
-            echo json_encode([
-                "success" => false,
-                "error" => $e->getMessage()
-            ]);
+            $success = Owner::delete($id);
+            if ($success) {
+                $this->jsonResponse(array('success' => true, 'message' => 'Propriétaire supprimé avec succès'));
+            } else {
+                $this->jsonResponse(array('success' => false, 'message' => 'Impossible de supprimer le propriétaire'), 400);
+            }
+        } catch (Exception $e) {
+            $this->jsonResponse(array('success' => false, 'message' => $e->getMessage()), 500);
         }
     }
 
-    /* =========================
-       RECHERCHE AVANCÉE
-    ========================== */
-    public function search(){
-        try {
-            $filters = json_decode(file_get_contents("php://input"), true);
-            $results = $this->model->search($filters);
-            echo json_encode([
-                "success" => true,
-                "data" => $results
-            ]);
-        } catch (PDOException $e) {
-            http_response_code(500);
-            echo json_encode([
-                "success" => false,
-                "error" => $e->getMessage()
-            ]);
-        }
-    }
-
-    /* =========================
-       STATISTIQUES
-    ========================== */
-    public function stats(){
-        try {
-            $stats = $this->model->stats();
-            echo json_encode([
-                "success" => true,
-                "data" => $stats
-            ]);
-        } catch (PDOException $e) {
-            http_response_code(500);
-            echo json_encode([
-                "success" => false,
-                "error" => $e->getMessage()
-            ]);
-        }
-    }
-
-    /* =========================
-       CHEVAUX D’UN OWNER
-    ========================== */
-    public function horses(int $owner_id){
-        try {
-            $chevaux = $this->model->horses($owner_id);
-            echo json_encode([
-                "success" => true,
-                "data" => $chevaux
-            ]);
-        } catch (PDOException $e) {
-            http_response_code(500);
-            echo json_encode([
-                "success" => false,
-                "error" => $e->getMessage()
-            ]);
-        }
-    }
-
-    /* =========================
-       DERNIERS OWNERS AJOUTÉS
-    ========================== */
-    public function latest(int $limit = 5){
-        try {
-            $owners = $this->model->latest($limit);
-            echo json_encode([
-                "success" => true,
-                "data" => $owners
-            ]);
-        } catch (PDOException $e) {
-            http_response_code(500);
-            echo json_encode([
-                "success" => false,
-                "error" => $e->getMessage()
-            ]);
-        }
+    private function jsonResponse($data, $statusCode = 200) {
+        header('Content-Type: application/json; charset=utf-8');
+        http_response_code($statusCode);
+        echo json_encode($data);
+        exit;
     }
 }
-?>

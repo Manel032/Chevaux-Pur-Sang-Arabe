@@ -1,1 +1,42 @@
+JockeyController - API Routes & Documentation
+===============================================
 
+This file documents the API requests handled by the JockeyController in this application.
+
+1. LIST ALL JOCKEYS
+-------------------
+Endpoint:   api.php?action=get_jockeys
+Method:     GET
+Response:   { "success": true, "data": [ { "id": 1, "nom": "Fethi Belhadj", "nationalite": "Tunisienne", "experience_annees": 5 }, ... ] }
+
+2. GET JOCKEY BY ID (with their race participations)
+----------------------------------------------------
+Endpoint:   api.php?action=get_jockey&id=<jockey_id>
+Method:     GET
+Response:   { 
+              "success": true, 
+              "data": { "id": 1, "nom": "Fethi Belhadj", "nationalite": "Tunisienne", "experience_annees": 5 },
+              "participations": [
+                { "cheval_id": 3, "course_id": 2, "jockey_id": 1, "classement": 1, "course_nom": "Grand Prix de Sidi Thabet", "date_course": "2026-05-10", "lieu": "Hippodrome de Ksar Said", "cheval_nom": "Nassim" }
+              ]
+            }
+
+3. CREATE A JOCKEY
+------------------
+Endpoint:   api.php?action=create_jockey
+Method:     POST
+Payload:    { "nom": "Jamel Eddine", "nationalite": "Tunisienne", "experience_annees": 8 }
+Response:   { "success": true, "message": "Jockey cree avec succes", "id": 4 }
+
+4. UPDATE A JOCKEY
+------------------
+Endpoint:   api.php?action=update_jockey&id=<jockey_id>
+Method:     POST (or PUT)
+Payload:    { "nom": "Jamel Eddine", "nationalite": "Tunisienne", "experience_annees": 9 }
+Response:   { "success": true, "message": "Jockey mis a jour avec succes" }
+
+5. DELETE A JOCKEY
+------------------
+Endpoint:   api.php?action=delete_jockey&id=<jockey_id>
+Method:     POST (or DELETE)
+Response:   { "success": true, "message": "Jockey supprime avec succes" }

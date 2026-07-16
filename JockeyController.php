@@ -1,118 +1,82 @@
 <?php
+// JockeyController.php - Controller for Jockey
+
+require_once 'Jockey.php';
+
 class JockeyController {
-
-    private Jockey $model;
-
-    public function __construct(Jockey $model){
-        $this->model = $model;
-    }
-
-    /* =========================
-       LISTE TOUS LES JOCKEYS
-    ========================== */
-    public function index(){
-        $jockeys = $this->model->all();
-        echo json_encode([
-            "success" => true,
-            "data" => $jockeys
-        ]);
-    }
-
-    /* =========================
-       AFFICHER UN JOCKEY (avec ses chevaux)
-    ========================== */
-    public function show(int $id){
-        $jockey = $this->model->show($id);
-        if($jockey){
-            $jockey["chevaux"] = $this->model->horses($id);
-            echo json_encode([
-                "success" => true,
-                "data" => $jockey
-            ]);
-        } else {
-            http_response_code(404);
-            echo json_encode([
-                "success" => false,
-                "error" => "Jockey non trouvé"
-            ]);
+    
+    public function index() {
+        try {
+            $jockeys = Jockey::getAll();
+            $this->jsonResponse(array('success' => true, 'data' => $jockeys));
+        } catch (Exception $e) {
+            $this->jsonResponse(array('success' => false, 'message' => $e->getMessage()), 500);
         }
     }
 
-    /* =========================
-       AJOUTER UN JOCKEY
-    ========================== */
-    public function store(){
-        $data = json_decode(file_get_contents("php://input"), true);
-        $success = $this->model->create($data);
-        echo json_encode([
-            "success" => $success
-        ]);
+    public function show($id) {
+        try {
+            $jockey = Jockey::getById($id);
+            if ($jockey) {
+                $participations = Jockey::getParticipations($id);
+                $this->jsonResponse(array('success' => true, 'data' => $jockey, 'participations' => $participations));
+            } else {
+                $this->jsonResponse(array('success' => false, 'message' => 'Jockey non trouvé'), 404);
+            }
+        } catch (Exception $e) {
+            $this->jsonResponse(array('success' => false, 'message' => $e->getMessage()), 500);
+        }
     }
 
-    /* =========================
-       MODIFIER UN JOCKEY
-    ========================== */
-    public function update(int $id){
-        $data = json_decode(file_get_contents("php://input"), true);
-        $success = $this->model->update($id, $data);
-        echo json_encode([
-            "success" => $success
-        ]);
+    public function store($data) {
+        try {
+            if (empty($data['nom'])) {
+                $this->jsonResponse(array('success' => false, 'message' => 'Le nom du jockey est obligatoire'), 400);
+                return;
+            }
+
+            $id = Jockey::create($data);
+            $this->jsonResponse(array('success' => true, 'message' => 'Jockey créé avec succès', 'id' => $id), 201);
+        } catch (Exception $e) {
+            $this->jsonResponse(array('success' => false, 'message' => $e->getMessage()), 500);
+        }
     }
 
-    /* =========================
-       SUPPRIMER UN JOCKEY
-    ========================== */
-    public function destroy(int $id){
-        $success = $this->model->delete($id);
-        echo json_encode([
-            "success" => $success
-        ]);
+    public function update($id, $data) {
+        try {
+            if (empty($data['nom'])) {
+                $this->jsonResponse(array('success' => false, 'message' => 'Le nom du jockey est obligatoire'), 400);
+                return;
+            }
+
+            $success = Jockey::update($id, $data);
+            if ($success) {
+                $this->jsonResponse(array('success' => true, 'message' => 'Jockey mis à jour avec succès'));
+            } else {
+                $this->jsonResponse(array('success' => false, 'message' => 'Impossible de mettre à jour le jockey'), 400);
+            }
+        } catch (Exception $e) {
+            $this->jsonResponse(array('success' => false, 'message' => $e->getMessage()), 500);
+        }
     }
 
-    /* =========================
-       RECHERCHE AVANCÉE
-    ========================== */
-    public function search(){
-        $filters = json_decode(file_get_contents("php://input"), true);
-        $results = $this->model->search($filters);
-        echo json_encode([
-            "success" => true,
-            "data" => $results
-        ]);
+    public function destroy($id) {
+        try {
+            $success = Jockey::delete($id);
+            if ($success) {
+                $this->jsonResponse(array('success' => true, 'message' => 'Jockey supprimé avec succès'));
+            } else {
+                $this->jsonResponse(array('success' => false, 'message' => 'Impossible de supprimer le jockey'), 400);
+            }
+        } catch (Exception $e) {
+            $this->jsonResponse(array('success' => false, 'message' => $e->getMessage()), 500);
+        }
     }
 
-    /* =========================
-       STATISTIQUES
-    ========================== */
-    public function stats(){
-        $stats = $this->model->stats();
-        echo json_encode([
-            "success" => true,
-            "data" => $stats
-        ]);
-    }
-
-    /* =========================
-       CHEVAUX D’UN JOCKEY
-    ========================== */
-    public function horses(int $jockey_id){
-        $chevaux = $this->model->horses($jockey_id);
-        echo json_encode([
-            "success" => true,
-            "data" => $chevaux
-        ]);
-    }
-
-    /* =========================
-       DERNIERS JOCKEYS AJOUTÉS
-    ========================== */
-    public function latest(int $limit = 5){
-        $jockeys = $this->model->latest($limit);
-        echo json_encode([
-            "success" => true,
-            "data" => $jockeys
-        ]);
+    private function jsonResponse($data, $statusCode = 200) {
+        header('Content-Type: application/json; charset=utf-8');
+        http_response_code($statusCode);
+        echo json_encode($data);
+        exit;
     }
 }
-?>

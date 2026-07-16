@@ -1,166 +1,111 @@
 <?php
+// Course.php - Model for Course (Races)
+
+require_once 'database.php';
+
 class Course {
-
-    private PDO $db;
-
-    public function __construct(PDO $db){
-        $this->db = $db;
+    public static function getAll() {
+        $db = Database::getConnection();
+        $stmt = $db->query("SELECT * FROM course ORDER BY date_course DESC, nom ASC");
+        return $stmt->fetchAll();
     }
 
-    /* =========================
-       READ – Toutes les courses
-    ========================== */
-    public function all(): array {
-        $sql = "
-            SELECT co.*, c.nom AS cheval, o.nom AS owner, j.nom AS jockey
-            FROM courses co
-            LEFT JOIN chevaux c ON co.cheval_id = c.id
-            LEFT JOIN owners o ON c.owner_id = o.id
-            LEFT JOIN jockeys j ON c.jockey_id = j.id
-            ORDER BY co.date DESC
-        ";
-        return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    public static function getById($id) {
+        $db = Database::getConnection();
+        $stmt = $db->prepare("SELECT * FROM course WHERE id = :id");
+        $stmt->execute(array(':id' => $id));
+        return $stmt->fetch();
     }
 
-    /* =========================
-       READ – Une course
-    ========================== */
-    public function show(int $id): ?array {
-        $stmt = $this->db->prepare("
-            SELECT co.*, c.nom AS cheval, o.nom AS owner, j.nom AS jockey
-            FROM courses co
-            LEFT JOIN chevaux c ON co.cheval_id = c.id
-            LEFT JOIN owners o ON c.owner_id = o.id
-            LEFT JOIN jockeys j ON c.jockey_id = j.id
-            WHERE co.id = ?
-        ");
-        $stmt->execute([$id]);
-        $course = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $course ?: null;
+    public static function create($data) {
+        $db = Database::getConnection();
+        $sql = "INSERT INTO course (nom, date_course, lieu, distance, prix_millimes) 
+                VALUES (:nom, :date_course, :lieu, :distance, :prix_millimes)";
+        $stmt = $db->prepare($sql);
+        $stmt->execute(array(
+            ':nom' => $data['nom'],
+            ':date_course' => $data['date_course'],
+            ':lieu' => $data['lieu'],
+            ':distance' => (int)$data['distance'],
+            ':prix_millimes' => isset($data['prix_millimes']) ? (int)$data['prix_millimes'] : 0
+        ));
+        return $db->lastInsertId();
     }
 
-    /* =========================
-       CREATE – Ajouter une course
-    ========================== */
-    public function create(array $data): bool {
-        $stmt = $this->db->prepare("
-            INSERT INTO courses (nom, date, trophée, gains, cheval_id)
-            VALUES (:nom, :date, :trophee, :gains, :cheval_id)
-        ");
-        return $stmt->execute([
-            ":nom"       => $data["nom"],
-            ":date"      => $data["date"],
-            ":trophee"   => $data["trophée"],
-            ":gains"     => $data["gains"],
-            ":cheval_id" => $data["cheval_id"]
-        ]);
+    public static function update($id, $data) {
+        $db = Database::getConnection();
+        $sql = "UPDATE course SET 
+                    nom = :nom, 
+                    date_course = :date_course, 
+                    lieu = :lieu, 
+                    distance = :distance, 
+                    prix_millimes = :prix_millimes 
+                WHERE id = :id";
+        $stmt = $db->prepare($sql);
+        return $stmt->execute(array(
+            ':id' => (int)$id,
+            ':nom' => $data['nom'],
+            ':date_course' => $data['date_course'],
+            ':lieu' => $data['lieu'],
+            ':distance' => (int)$data['distance'],
+            ':prix_millimes' => isset($data['prix_millimes']) ? (int)$data['prix_millimes'] : 0
+        ));
     }
 
-    /* =========================
-       UPDATE – Modifier une course
-    ========================== */
-    public function update(int $id, array $data): bool {
-        $stmt = $this->db->prepare("
-            UPDATE courses SET
-                nom = :nom,
-                date = :date,
-                trophée = :trophee,
-                gains = :gains,
-                cheval_id = :cheval_id
-            WHERE id = :id
-        ");
-        return $stmt->execute([
-            ":nom"       => $data["nom"],
-            ":date"      => $data["date"],
-            ":trophee"   => $data["trophée"],
-            ":gains"     => $data["gains"],
-            ":cheval_id" => $data["cheval_id"],
-            ":id"        => $id
-        ]);
+    public static function delete($id) {
+        $db = Database::getConnection();
+        
+        // Delete participations associated with this race
+        $stmt_assoc = $db->prepare("DELETE FROM participation WHERE course_id = :id");
+        $stmt_assoc->execute(array(':id' => (int)$id));
+
+        $stmt = $db->prepare("DELETE FROM course WHERE id = :id");
+        return $stmt->execute(array(':id' => (int)$id));
     }
 
-    /* =========================
-       DELETE – Supprimer une course
-    ========================== */
-    public function delete(int $id): bool {
-        $stmt = $this->db->prepare("DELETE FROM courses WHERE id = ?");
-        return $stmt->execute([$id]);
+    // Get all horse participations inside this race, ordered by ranking
+    public static function getParticipations($course_id) {
+        $db = Database::getConnection();
+        $sql = "SELECT p.*, c.nom AS cheval_nom, c.race AS cheval_race, j.nom AS jockey_nom
+                FROM participation p
+                JOIN cheval c ON p.cheval_id = c.id
+                LEFT JOIN jockey j ON p.jockey_id = j.id
+                WHERE p.course_id = :course_id
+                ORDER BY CASE WHEN p.classement IS NULL THEN 999 ELSE p.classement END ASC, c.nom ASC";
+        $stmt = $db->prepare($sql);
+        $stmt->execute(array(':course_id' => $course_id));
+        return $stmt->fetchAll();
     }
 
-    /* =========================
-       RECHERCHE AVANCÉE
-    ========================== */
-    public function search(array $filters): array {
-        $sql = "SELECT co.*, c.nom AS cheval, o.nom AS owner, j.nom AS jockey
-                FROM courses co
-                LEFT JOIN chevaux c ON co.cheval_id = c.id
-                LEFT JOIN owners o ON c.owner_id = o.id
-                LEFT JOIN jockeys j ON c.jockey_id = j.id
-                WHERE 1=1";
-        $params = [];
+    // Add a horse participation to a race
+    public static function addParticipation($data) {
+        $db = Database::getConnection();
+        
+        // Remove existing participation for this horse in this race if any
+        $stmt_del = $db->prepare("DELETE FROM participation WHERE course_id = :course_id AND cheval_id = :cheval_id");
+        $stmt_del->execute(array(
+            ':course_id' => (int)$data['course_id'],
+            ':cheval_id' => (int)$data['cheval_id']
+        ));
 
-        if(!empty($filters["nom"])){
-            $sql .= " AND co.nom LIKE ?";
-            $params[] = "%".$filters["nom"]."%";
-        }
-
-        if(!empty($filters["cheval_id"])){
-            $sql .= " AND co.cheval_id = ?";
-            $params[] = $filters["cheval_id"];
-        }
-
-        if(!empty($filters["date"])){
-            $sql .= " AND co.date = ?";
-            $params[] = $filters["date"];
-        }
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $sql = "INSERT INTO participation (cheval_id, course_id, jockey_id, classement)
+                VALUES (:cheval_id, :course_id, :jockey_id, :classement)";
+        $stmt = $db->prepare($sql);
+        return $stmt->execute(array(
+            ':cheval_id' => (int)$data['cheval_id'],
+            ':course_id' => (int)$data['course_id'],
+            ':jockey_id' => !empty($data['jockey_id']) ? (int)$data['jockey_id'] : null,
+            ':classement' => !empty($data['classement']) ? (int)$data['classement'] : null
+        ));
     }
 
-    /* =========================
-       STATISTIQUES
-    ========================== */
-    public function stats(): array {
-        return [
-            "total" => (int)$this->db->query("SELECT COUNT(*) FROM courses")->fetchColumn(),
-            "gains_total" => (float)$this->db->query("SELECT SUM(gains) FROM courses")->fetchColumn()
-        ];
+    // Remove a horse participation from a race
+    public static function removeParticipation($course_id, $cheval_id) {
+        $db = Database::getConnection();
+        $stmt = $db->prepare("DELETE FROM participation WHERE course_id = :course_id AND cheval_id = :cheval_id");
+        return $stmt->execute(array(
+            ':course_id' => (int)$course_id,
+            ':cheval_id' => (int)$cheval_id
+        ));
     }
-
-    /* =========================
-       COURSES D’UN CHEVAL
-    ========================== */
-    public function byHorse(int $cheval_id): array {
-        $stmt = $this->db->prepare("
-            SELECT co.*, c.nom AS cheval, o.nom AS owner, j.nom AS jockey
-            FROM courses co
-            LEFT JOIN chevaux c ON co.cheval_id = c.id
-            LEFT JOIN owners o ON c.owner_id = o.id
-            LEFT JOIN jockeys j ON c.jockey_id = j.id
-            WHERE co.cheval_id = ?
-            ORDER BY co.date DESC
-        ");
-        $stmt->execute([$cheval_id]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    /* =========================
-       DERNIÈRES COURSES AJOUTÉES
-    ========================== */
-    public function latest(int $limit = 5): array {
-        $stmt = $this->db->prepare("
-            SELECT co.*, c.nom AS cheval, o.nom AS owner, j.nom AS jockey
-            FROM courses co
-            LEFT JOIN chevaux c ON co.cheval_id = c.id
-            LEFT JOIN owners o ON c.owner_id = o.id
-            LEFT JOIN jockeys j ON c.jockey_id = j.id
-            ORDER BY co.date DESC
-            LIMIT ?
-        ");
-        $stmt->bindValue(1, $limit, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-}?>
+}

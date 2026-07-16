@@ -1,104 +1,175 @@
 <?php
-header("Content-Type: application/json");
+// api.php - API Router
 
-require_once "Database.php";
-require_once "Cheval.php";
-require_once "Owner.php";
-require_once "Jockey.php";
-require_once "Course.php";
-require_once "ChevalController.php";
-require_once "OwnerController.php";
-require_once "JockeyController.php";
-require_once "CourseController.php";
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-// Connexion à la DB
-$db = Database::connect();
+// Import models and controllers
+require_once 'database.php';
+require_once 'Cheval.php';
+require_once 'ChevalControler.php';
+require_once 'Owner.php';
+require_once 'OwnerController.php';
+require_once 'Jockey.php';
+require_once 'JockeyController.php';
+require_once 'Course.php';
+require_once 'CourseController.php';
 
-// Instanciation des modèles et controllers
-$chevalController = new ChevalController(new Cheval($db));
-$ownerController  = new OwnerController(new Owner($db));
-$jockeyController = new JockeyController(new Jockey($db));
-$courseController = new CourseController(new Course($db));
+// Parse query action
+$action = isset($_GET['action']) ? $_GET['action'] : '';
 
-// URL et méthode
-$uri = explode("/", trim($_SERVER['REQUEST_URI'], "/"));
-$method = $_SERVER['REQUEST_METHOD'];
-$resource = $uri[1] ?? null;
-$id       = isset($uri[2]) && is_numeric($uri[2]) ? (int)$uri[2] : null;
+// Retrieve request body if JSON
+$rawInput = file_get_contents('php://input');
+$inputData = json_decode($rawInput, true);
+if ($inputData === null) {
+    $inputData = $_POST; // Fallback to standard POST
+}
 
-// ROUTES API
-switch($resource){
-
-    /* ===== OWNERS ===== */
-    case "owners":
-        if(isset($uri[2]) && $uri[2] === "search") $ownerController->search();
-        elseif(isset($uri[2]) && $uri[2] === "stats") $ownerController->stats();
-        elseif(isset($uri[2]) && $uri[2] === "latest") $ownerController->latest();
-        elseif(isset($uri[2]) && $uri[2] === "horses" && isset($uri[3])) $ownerController->horses((int)$uri[3]);
-        else {
-            switch($method){
-                case "GET":
-                    $id ? $ownerController->show($id) : $ownerController->index();
-                    break;
-                case "POST": $ownerController->store(); break;
-                case "PUT": $id ? $ownerController->update($id) : null; break;
-                case "DELETE": $id ? $ownerController->destroy($id) : null; break;
-            }
-        }
+// Router dispatcher
+switch ($action) {
+    // --- CHEVAL ACTIONS ---
+    case 'get_chevaux':
+        $filters = array(
+            'race' => isset($_GET['race']) ? $_GET['race'] : '',
+            'sexe' => isset($_GET['sexe']) ? $_GET['sexe'] : '',
+            'search' => isset($_GET['search']) ? $_GET['search'] : ''
+        );
+        $controller = new ChevalControler();
+        $controller->index($filters);
         break;
 
-    /* ===== JOCKEYS ===== */
-    case "jockeys":
-        if(isset($uri[2]) && $uri[2] === "search") $jockeyController->search();
-        elseif(isset($uri[2]) && $uri[2] === "stats") $jockeyController->stats();
-        elseif(isset($uri[2]) && $uri[2] === "latest") $jockeyController->latest();
-        elseif(isset($uri[2]) && $uri[2] === "horses" && isset($uri[3])) $jockeyController->horses((int)$uri[3]);
-        else {
-            switch($method){
-                case "GET":
-                    $id ? $jockeyController->show($id) : $jockeyController->index();
-                    break;
-                case "POST": $jockeyController->store(); break;
-                case "PUT": $id ? $jockeyController->update($id) : null; break;
-                case "DELETE": $id ? $jockeyController->destroy($id) : null; break;
-            }
-        }
+    case 'get_cheval':
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        $controller = new ChevalControler();
+        $controller->show($id);
         break;
 
-    /* ===== CHEVAUX ===== */
-    case "chevaux":
-        if(isset($uri[2]) && $uri[2] === "search") $chevalController->search();
-        elseif(isset($uri[2]) && $uri[2] === "stats") $chevalController->stats();
-        elseif(isset($uri[2]) && $uri[2] === "latest") $chevalController->latest();
-        else {
-            switch($method){
-                case "GET": $id ? $chevalController->show($id) : $chevalController->index(); break;
-                case "POST": $chevalController->store(); break;
-                case "PUT": $id ? $chevalController->update($id) : null; break;
-                case "DELETE": $id ? $chevalController->destroy($id) : null; break;
-            }
-        }
+    case 'create_cheval':
+        $controller = new ChevalControler();
+        $controller->store($inputData);
         break;
 
-    /* ===== COURSES ===== */
-    case "courses":
-        if(isset($uri[2]) && $uri[2] === "search") $courseController->search();
-        elseif(isset($uri[2]) && $uri[2] === "stats") $courseController->stats();
-        elseif(isset($uri[2]) && $uri[2] === "latest") $courseController->latest();
-        elseif(isset($uri[2]) && $uri[2] === "byHorse" && isset($uri[3])) $courseController->byHorse((int)$uri[3]);
-        else {
-            switch($method){
-                case "GET": $id ? $courseController->show($id) : $courseController->index(); break;
-                case "POST": $courseController->store(); break;
-                case "PUT": $id ? $courseController->update($id) : null; break;
-                case "DELETE": $id ? $courseController->destroy($id) : null; break;
-            }
-        }
+    case 'update_cheval':
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        $controller = new ChevalControler();
+        $controller->update($id, $inputData);
+        break;
+
+    case 'delete_cheval':
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        $controller = new ChevalControler();
+        $controller->destroy($id);
+        break;
+
+    case 'get_parents_lists':
+        $excludeId = isset($_GET['exclude_id']) ? (int)$_GET['exclude_id'] : null;
+        $controller = new ChevalControler();
+        $controller->getParentsLists($excludeId);
+        break;
+
+    // --- OWNER ACTIONS ---
+    case 'get_owners':
+        $controller = new OwnerController();
+        $controller->index();
+        break;
+
+    case 'get_owner':
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        $controller = new OwnerController();
+        $controller->show($id);
+        break;
+
+    case 'create_owner':
+        $controller = new OwnerController();
+        $controller->store($inputData);
+        break;
+
+    case 'update_owner':
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        $controller = new OwnerController();
+        $controller->update($id, $inputData);
+        break;
+
+    case 'delete_owner':
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        $controller = new OwnerController();
+        $controller->destroy($id);
+        break;
+
+    // --- JOCKEY ACTIONS ---
+    case 'get_jockeys':
+        $controller = new JockeyController();
+        $controller->index();
+        break;
+
+    case 'get_jockey':
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        $controller = new JockeyController();
+        $controller->show($id);
+        break;
+
+    case 'create_jockey':
+        $controller = new JockeyController();
+        $controller->store($inputData);
+        break;
+
+    case 'update_jockey':
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        $controller = new JockeyController();
+        $controller->update($id, $inputData);
+        break;
+
+    case 'delete_jockey':
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        $controller = new JockeyController();
+        $controller->destroy($id);
+        break;
+
+    // --- COURSE ACTIONS ---
+    case 'get_courses':
+        $controller = new CourseController();
+        $controller->index();
+        break;
+
+    case 'get_course':
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        $controller = new CourseController();
+        $controller->show($id);
+        break;
+
+    case 'create_course':
+        $controller = new CourseController();
+        $controller->store($inputData);
+        break;
+
+    case 'update_course':
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        $controller = new CourseController();
+        $controller->update($id, $inputData);
+        break;
+
+    case 'delete_course':
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        $controller = new CourseController();
+        $controller->destroy($id);
+        break;
+
+    case 'add_participation':
+        $controller = new CourseController();
+        $controller->addParticipation($inputData);
+        break;
+
+    case 'remove_participation':
+        $course_id = isset($_GET['course_id']) ? (int)$_GET['course_id'] : 0;
+        $cheval_id = isset($_GET['cheval_id']) ? (int)$_GET['cheval_id'] : 0;
+        $controller = new CourseController();
+        $controller->removeParticipation($course_id, $cheval_id);
         break;
 
     default:
+        header('Content-Type: application/json; charset=utf-8');
         http_response_code(404);
-        echo json_encode(["success"=>false, "error"=>"Ressource non trouvée"]);
+        echo json_encode(array('success' => false, 'message' => 'Action API non reconnue'));
         break;
 }
-?>

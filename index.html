@@ -1,376 +1,388 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chevaux Pur-Sang Arabe Tunisiens</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChevalTunisie - Les Chevaux Arabes et Barbes Tunisiens</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Découvrez les prestigieuses races de chevaux tunisiens : le Pur-Sang Arabe, le Barbe et l'Arabe-Barbe. Explorez le registre généalogique et l'historique des courses de Sidi Thabet.">
+    <meta name="keywords" content="cheval tunisien, pur-sang arabe, barbe, arabe-barbe, sidi thabet, tbourida, fantasia, tunisie, pedigree, courses hippiques">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🐎</text></svg>">
 
-  <!-- Bootstrap -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
 
-  <!-- Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
-  <style>
-    body {
-      font-family: "Poppins", sans-serif;
-      background-color: #f5f7fa;
-    }
-
-    .navbar-brand {
-      font-weight: 600;
-      letter-spacing: 1px;
-    }
-
-    .hero {
-      background: linear-gradient(135deg, #0d6efd, #198754);
-      color: white;
-      padding: 60px 20px;
-      border-radius: 15px;
-    }
-
-    .card {
-      border-radius: 15px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-    }
-
-    footer {
-      background: #111;
-      color: #bbb;
-      padding: 15px 0;
-      margin-top: 40px;
-      font-size: 14px;
-    }
-  </style>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
-
 <body>
 
-<!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
-  <div class="container">
-    <a class="navbar-brand" href="#">🐎 Chevaux Tunisiens</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="menu">
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link" href="#chevaux">Chevaux</a></li>
-        <li class="nav-item"><a class="nav-link" href="#owners">Owners</a></li>
-        <li class="nav-item"><a class="nav-link" href="#jockeys">Jockeys</a></li>
-        <li class="nav-item"><a class="nav-link" href="#courses">Courses</a></li>
-      </ul>
-    </div>
-  </div>
-</nav>
+    <!-- Target mount node for React -->
+    <div id="app-root"></div>
 
-<!-- HERO -->
-<div class="container my-4">
-  <div class="hero text-center">
-    <h1>Chevaux Pur-Sang Arabe Tunisiens</h1>
-    <p class="mt-3">
-      Plateforme professionnelle pour la gestion des chevaux,
-      propriétaires, jockeys et courses
-    </p>
-  </div>
-</div>
+    <!-- Core CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <!-- Babel Standalone to compile JSX on the fly -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Axios for HTTP API requests -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
-<!-- CONTENT -->
-<div class="container">
-
-  <!-- CHEVAUX -->
-  <section id="chevaux" class="mb-4">
-    <div class="card p-4">
-      <h3 class="mb-3">🐎 Chevaux</h3>
-      <div id="chevaux-list" class="list-group">
-        <div class="text-muted">Chargement des chevaux...</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- OWNERS -->
-  <section id="owners" class="mb-4">
-    <div class="card p-4">
-      <h3 class="mb-3">👤 Owners</h3>
-      <div id="owners-list" class="list-group">
-        <div class="text-muted">Chargement des owners...</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- JOCKEYS -->
-  <section id="jockeys" class="mb-4">
-    <div class="card p-4">
-      <h3 class="mb-3">🏇 Jockeys</h3>
-      <div id="jockeys-list" class="list-group">
-        <div class="text-muted">Chargement des jockeys...</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- COURSES -->
-  <section id="courses" class="mb-4">
-    <div class="card p-4">
-      <h3 class="mb-3">🏆 Courses</h3>
-      <div id="courses-list" class="list-group">
-        <div class="text-muted">Chargement des courses...</div>
-      </div>
-    </div>
-  </section>
-
-</div>
-
-<!-- FOOTER -->
-<footer class="text-center">
-  <div class="container">
-    © 2025 — Projet Chevaux Pur-Sang Arabe Tunisiens  
+    <!-- Load React Components in Order of Dependency -->
+    <script type="text/babel" src="ChevalDetail.jsx"></script>
+    <script type="text/babel" src="ChevalForm.jsx"></script>
+    <script type="text/babel" src="ChevalList.jsx"></script>
+    <script type="text/babel" src="ChevauxPage.jsx"></script>
     
-  </div>
-</footer>
+    <script type="text/babel" src="OwnerList.jsx"></script>
+    <script type="text/babel" src="OwnerForm.jsx"></script>
+    <script type="text/babel" src="OwnersPage.jsx"></script>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script type="module">
-const api = axios.create({
-    baseURL: "http://localhost/chevaux-arabes/backend",
-    headers: { "Content-Type": "application/json" }
-});
+    <!-- Main React App Mounting Script -->
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-// Sections
-function showSection(name) {
-    document.querySelectorAll('.section').forEach(sec => sec.classList.add('d-none'));
-    document.getElementById(name).classList.remove('d-none');
-    hideForm(name);
-    switch(name){
-        case 'chevaux': loadChevaux(); break;
-        case 'owners': loadOwners(); break;
-        case 'jockeys': loadJockeys(); break;
-        case 'courses': loadCourses(); break;
-    }
-}
-function showForm(section){ document.getElementById(section+'-form').classList.remove('d-none'); }
-function hideForm(section){ document.getElementById(section+'-form').classList.add('d-none'); 
-    if(section==='chevaux') document.getElementById('form-cheval').reset();
-    if(section==='owners') document.getElementById('form-owner').reset();
-    if(section==='jockeys') document.getElementById('form-jockey').reset();
-    if(section==='courses') document.getElementById('form-course').reset();
-}
+        // Custom Component for Home View
+        function HomeView({ setTab }) {
+            return (
+                <div className="tab-content">
+                    <div className="hero-banner glass-panel">
+                        <div className="hero-overlay"></div>
+                        <div className="hero-content">
+                            <span className="hero-tagline">Héritage & Prestige Tunisien</span>
+                            <h2>Les Nobles Chevaux de Tunisie</h2>
+                            <p>Du légendaire Haras National de Sidi Thabet aux pistes de la Tbourida, explorez l'histoire, la généalogie et les performances de nos Pur-Sang Arabes et Barbes.</p>
+                            <div className="hero-btns">
+                                <button className="btn btn-primary" onClick={() => setTab('chevaux')}>
+                                    🐎 Explorer le Registre
+                                </button>
+                                <button className="btn btn-secondary" onClick={() => setTab('races')}>
+                                    📚 Découvrir les Races
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
-// -----------------------
-// Chevaux CRUD
-async function loadChevaux(){
-    const list = document.getElementById('chevaux-list');
-    list.innerHTML='Chargement...';
-    try{
-        const res = await api.get('/chevaux');
-        list.innerHTML='';
-        res.data.data.forEach(c=>{
-            const li = document.createElement('li');
-            li.className='list-group-item d-flex justify-content-between align-items-center';
-            li.innerHTML=`${c.nom} (${c.age || 'N/A'} ans) - Owner: ${c.owner_id} 
-                <span>
-                    <button class="btn btn-sm btn-warning me-1" onclick="editCheval(${c.id})">Modifier</button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteCheval(${c.id})">Supprimer</button>
-                </span>`;
-            list.appendChild(li);
-        });
-    }catch(err){ console.error(err); list.innerHTML='Erreur'; }
-}
+                    <div className="section-header">
+                        <h2>Patrimoine Équestre National</h2>
+                    </div>
 
-document.getElementById('form-cheval').addEventListener('submit', async e=>{
-    e.preventDefault();
-    const id = document.getElementById('cheval-id').value;
-    const data = {
-        nom: document.getElementById('cheval-nom').value,
-        ddn: document.getElementById('cheval-ddn').value,
-        pays: document.getElementById('cheval-pays').value,
-        owner_id: document.getElementById('cheval-owner').value,
-        jockey_id: document.getElementById('cheval-jockey').value
-    };
-    try{
-        if(id) await api.put(`/chevaux/${id}`, data);
-        else await api.post('/chevaux', data);
-        loadChevaux();
-        hideForm('chevaux');
-    }catch(err){ console.error(err); }
-});
-async function editCheval(id){
-    const res = await api.get(`/chevaux/${id}`);
-    const c=res.data.data;
-    document.getElementById('cheval-id').value=c.id;
-    document.getElementById('cheval-nom').value=c.nom;
-    document.getElementById('cheval-ddn').value=c.ddn;
-    document.getElementById('cheval-pays').value=c.pays;
-    document.getElementById('cheval-owner').value=c.owner_id;
-    document.getElementById('cheval-jockey').value=c.jockey_id;
-    showForm('chevaux');
-}
-async function deleteCheval(id){
-    if(confirm('Voulez-vous supprimer ce cheval ?')){
-        await api.delete(`/chevaux/${id}`);
-        loadChevaux();
-    }
-}
+                    <div className="cards-grid">
+                        <div className="glass-panel item-card" style={{padding: '1.5rem'}}>
+                            <div className="stat-icon">🧬</div>
+                            <h3 style={{margin: '1rem 0 0.5rem 0'}}>Registre de Pedigree</h3>
+                            <p style={{color: 'var(--text-muted)', fontSize: '0.9rem'}}>Suivi généalogique exhaustif des lignées de reproducteurs (sires et dams) assurant la pureté de la race.</p>
+                        </div>
+                        <div className="glass-panel item-card" style={{padding: '1.5rem'}}>
+                            <div className="stat-icon">🏆</div>
+                            <h3 style={{margin: '1rem 0 0.5rem 0'}}>Courses Hippiques</h3>
+                            <p style={{color: 'var(--text-muted)', fontSize: '0.9rem'}}>Suivi en temps réel des courses nationales disputées à l'hippodrome historique de Ksar Saïd.</p>
+                        </div>
+                        <div className="glass-panel item-card" style={{padding: '1.5rem'}}>
+                            <div className="stat-icon">🏛️</div>
+                            <h3 style={{margin: '1rem 0 0.5rem 0'}}>Haras de Sidi Thabet</h3>
+                            <p style={{color: 'var(--text-muted)', fontSize: '0.9rem'}}>Établi en 1881, c'est le berceau de l'élevage du Pur-Sang Arabe et du cheval de selle en Tunisie.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
 
-// -----------------------
-// Owners CRUD
-async function loadOwners(){
-    const list=document.getElementById('owners-list');
-    list.innerHTML='Chargement...';
-    try{
-        const res=await api.get('/owners');
-        list.innerHTML='';
-        res.data.data.forEach(o=>{
-            const li=document.createElement('li');
-            li.className='list-group-item d-flex justify-content-between align-items-center';
-            li.innerHTML=`${o.nom} - ${o.pays} - ${o.email || ''} 
-                <span>
-                    <button class="btn btn-sm btn-warning me-1" onclick="editOwner(${o.id})">Modifier</button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteOwner(${o.id})">Supprimer</button>
-                </span>`;
-            list.appendChild(li);
-        });
-    }catch(err){ console.error(err); list.innerHTML='Erreur'; }
-}
-document.getElementById('form-owner').addEventListener('submit', async e=>{
-    e.preventDefault();
-    const id=document.getElementById('owner-id').value;
-    const data={
-        nom: document.getElementById('owner-nom').value,
-        pays: document.getElementById('owner-pays').value,
-        email: document.getElementById('owner-email').value,
-        tel: document.getElementById('owner-tel').value
-    };
-    try{
-        if(id) await api.put(`/owners/${id}`, data);
-        else await api.post('/owners', data);
-        loadOwners(); hideForm('owners');
-    }catch(err){ console.error(err); }
-});
-async function editOwner(id){
-    const res=await api.get(`/owners/${id}`);
-    const o=res.data.data;
-    document.getElementById('owner-id').value=o.id;
-    document.getElementById('owner-nom').value=o.nom;
-    document.getElementById('owner-pays').value=o.pays;
-    document.getElementById('owner-email').value=o.email;
-    document.getElementById('owner-tel').value=o.tel;
-    showForm('owners');
-}
-async function deleteOwner(id){
-    if(confirm('Supprimer ce owner ?')){
-        await api.delete(`/owners/${id}`);
-        loadOwners();
-    }
-}
+        // Custom Component for Breeds / History View
+        function RacesView() {
+            return (
+                <div className="tab-content">
+                    <div className="section-header">
+                        <h2>Les Races Emblématiques de Tunisie</h2>
+                    </div>
 
-// -----------------------
-// Jockeys CRUD
-async function loadJockeys(){
-    const list=document.getElementById('jockeys-list');
-    list.innerHTML='Chargement...';
-    try{
-        const res=await api.get('/jockeys');
-        list.innerHTML='';
-        res.data.data.forEach(j=>{
-            const li=document.createElement('li');
-            li.className='list-group-item d-flex justify-content-between align-items-center';
-            li.innerHTML=`${j.nom} - ${j.pays} - ${j.email || ''} 
-                <span>
-                    <button class="btn btn-sm btn-warning me-1" onclick="editJockey(${j.id})">Modifier</button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteJockey(${j.id})">Supprimer</button>
-                </span>`;
-            list.appendChild(li);
-        });
-    }catch(err){ console.error(err); list.innerHTML='Erreur'; }
-}
-document.getElementById('form-jockey').addEventListener('submit', async e=>{
-    e.preventDefault();
-    const id=document.getElementById('jockey-id').value;
-    const data={
-        nom: document.getElementById('jockey-nom').value,
-        pays: document.getElementById('jockey-pays').value,
-        email: document.getElementById('jockey-email').value,
-        tel: document.getElementById('jockey-tel').value
-    };
-    try{
-        if(id) await api.put(`/jockeys/${id}`, data);
-        else await api.post('/jockeys', data);
-        loadJockeys(); hideForm('jockeys');
-    }catch(err){ console.error(err); }
-});
-async function editJockey(id){
-    const res=await api.get(`/jockeys/${id}`);
-    const j=res.data.data;
-    document.getElementById('jockey-id').value=j.id;
-    document.getElementById('jockey-nom').value=j.nom;
-    document.getElementById('jockey-pays').value=j.pays;
-    document.getElementById('jockey-email').value=j.email;
-    document.getElementById('jockey-tel').value=j.tel;
-    showForm('jockeys');
-}
-async function deleteJockey(id){
-    if(confirm('Supprimer ce jockey ?')){
-        await api.delete(`/jockeys/${id}`);
-        loadJockeys();
-    }
-}
+                    <div className="cards-grid">
+                        <div className="glass-panel item-card">
+                            <div className="card-image-wrapper">
+                                <img src="pur_sang_arabe.webp" alt="Pur-Sang Arabe" className="card-image" />
+                                <span className="card-badge badge-arabe">Pur-Sang Arabe</span>
+                            </div>
+                            <div className="card-details">
+                                <h3>Le Pur-Sang Arabe</h3>
+                                <p className="card-description">Réputé pour sa silhouette noble, sa tête expressive et sa queue fièrement portée. En Tunisie, la sélection repose sur des lignées d'exception importées et élevées au Haras de Sidi Thabet pour la course et la beauté.</p>
+                            </div>
+                        </div>
 
-// -----------------------
-// Courses CRUD
-async function loadCourses(){
-    const list=document.getElementById('courses-list');
-    list.innerHTML='Chargement...';
-    try{
-        const res=await api.get('/courses');
-        list.innerHTML='';
-        res.data.data.forEach(c=>{
-            const li=document.createElement('li');
-            li.className='list-group-item d-flex justify-content-between align-items-center';
-            li.innerHTML=`${c.nom} - Date: ${c.date} - Cheval ID: ${c.cheval_id} 
-                <span>
-                    <button class="btn btn-sm btn-warning me-1" onclick="editCourse(${c.id})">Modifier</button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteCourse(${c.id})">Supprimer</button>
-                </span>`;
-            list.appendChild(li);
-        });
-    }catch(err){ console.error(err); list.innerHTML='Erreur'; }
-}
-document.getElementById('form-course').addEventListener('submit', async e=>{
-    e.preventDefault();
-    const id=document.getElementById('course-id').value;
-    const data={
-        nom: document.getElementById('course-nom').value,
-        date: document.getElementById('course-date').value,
-        cheval_id: document.getElementById('course-cheval').value
-    };
-    try{
-        if(id) await api.put(`/courses/${id}`, data);
-        else await api.post('/courses', data);
-        loadCourses(); hideForm('courses');
-    }catch(err){ console.error(err); }
-});
-async function editCourse(id){
-    const res=await api.get(`/courses/${id}`);
-    const c=res.data.data;
-    document.getElementById('course-id').value=c.id;
-    document.getElementById('course-nom').value=c.nom;
-    document.getElementById('course-date').value=c.date;
-    document.getElementById('course-cheval').value=c.cheval_id;
-    showForm('courses');
-}
-async function deleteCourse(id){
-    if(confirm('Supprimer cette course ?')){
-        await api.delete(`/courses/${id}`);
-        loadCourses();
-    }
-}
+                        <div className="glass-panel item-card">
+                            <div className="card-image-wrapper">
+                                <img src="barbe_tunisien.webp" alt="Le Barbe" className="card-image" />
+                                <span className="card-badge badge-barbe">Le Barbe</span>
+                            </div>
+                            <div className="card-details">
+                                <h3>Le Barbe Tunisien</h3>
+                                <p className="card-description">Originaire d'Afrique du Nord, le Barbe est le cheval de guerre traditionnel des Numides. D'une endurance extraordinaire et d'un tempérament courageux, il est l'élément central des spectacles de Fantasia (Tbourida).</p>
+                            </div>
+                        </div>
 
-// Afficher Chevaux par défaut
-showSection('chevaux');
-</script>
+                        <div className="glass-panel item-card">
+                            <div className="card-image-wrapper">
+                                <img src="hero_fantasia.webp" alt="Arabe-Barbe" className="card-image" />
+                                <span className="card-badge badge-arabe-barbe">L'Arabe-Barbe</span>
+                            </div>
+                            <div className="card-details">
+                                <h3>L'Arabe-Barbe</h3>
+                                <p className="card-description">Issu du croisement entre le Pur-Sang Arabe et le Barbe. Il combine la finesse et la vitesse du premier avec la rusticité et le mental équilibré du second. Très prisé pour l'équitation de loisir et de sport en Tunisie.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="section-header" style={{marginTop: '4rem'}}>
+                        <h2>Grandes Étapes de l'Élevage Tunisien</h2>
+                    </div>
+
+                    <div className="timeline">
+                        <div className="timeline-item">
+                            <div className="timeline-date">1881</div>
+                            <div className="timeline-content">
+                                <h3>Fondation du Haras de Sidi Thabet</h3>
+                                <p>Créé par décret beylical, il s'agit du plus ancien établissement d'amélioration des races chevalines en Afrique du Nord.</p>
+                            </div>
+                        </div>
+                        <div className="timeline-item">
+                            <div className="timeline-date">1896</div>
+                            <div className="timeline-content">
+                                <h3>Premières Courses Officielles</h3>
+                                <p>Organisation des premières compétitions hippiques réglementées à Tunis, jetant les bases du registre de performance.</p>
+                            </div>
+                        </div>
+                        <div className="timeline-item">
+                            <div className="timeline-date">1966</div>
+                            <div className="timeline-content">
+                                <h3>Création de la FNARC</h3>
+                                <p>La Fondation Nationale d'Amélioration de la Race Chevaline est créée pour gérer officiellement les Stud-Books tunisiens.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Custom Component for Races & Jockeys lists
+        function CoursesView() {
+            const [courses, setCourses] = useState([]);
+            const [jockeys, setJockeys] = useState([]);
+            const [selectedCourse, setSelectedCourse] = useState(null);
+            const [participations, setParticipations] = useState([]);
+            const [loading, setLoading] = useState(true);
+
+            useEffect(() => {
+                fetchData();
+            }, []);
+
+            const fetchData = async () => {
+                try {
+                    const resC = await axios.get('api.php?action=get_courses');
+                    const resJ = await axios.get('api.php?action=get_jockeys');
+                    setCourses(resC.data.data);
+                    setJockeys(resJ.data.data);
+                    setLoading(false);
+                } catch (err) {
+                    console.error("Erreur de chargement", err);
+                    setLoading(false);
+                }
+            };
+
+            const viewCourseDetails = async (course) => {
+                setSelectedCourse(course);
+                try {
+                    const res = await axios.get(`api.php?action=get_course&id=${course.id}`);
+                    setParticipations(res.data.participations);
+                } catch (err) {
+                    console.error("Erreur participations", err);
+                }
+            };
+
+            if (loading) return <div style={{textAlign:'center', padding:'2rem'}}>Chargement...</div>;
+
+            return (
+                <div className="tab-content">
+                    <div className="section-header">
+                        <h2>Calendrier & Résultats des Courses</h2>
+                    </div>
+
+                    <div style={{display:'grid', gridTemplateColumns:'1.5fr 1fr', gap:'2rem'}}>
+                        <div className="glass-panel" style={{padding:'1.5rem'}}>
+                            <h3>Races Actuelles (Hippodrome de Ksar Saïd)</h3>
+                            <div className="table-responsive">
+                                <table className="custom-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nom de la Course</th>
+                                            <th>Date</th>
+                                            <th>Lieu</th>
+                                            <th>Distance</th>
+                                            <th>Prix (TND)</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {courses.map(c => (
+                                            <tr key={c.id}>
+                                                <td><strong>{c.nom}</strong></td>
+                                                <td>{c.date_course}</td>
+                                                <td>{c.lieu}</td>
+                                                <td>{c.distance} m</td>
+                                                <td>{(c.prix_millimes / 1000).toLocaleString('fr-FR')} DT</td>
+                                                <td>
+                                                    <button className="btn btn-primary btn-sm" onClick={() => viewCourseDetails(c)}>
+                                                        🏆 Classement
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div className="glass-panel" style={{padding:'1.5rem'}}>
+                            <h3>Nos Jockeys d'Élite</h3>
+                            <div className="table-responsive">
+                                <table className="custom-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Nationalité</th>
+                                            <th>Expérience</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {jockeys.map(j => (
+                                            <tr key={j.id}>
+                                                <td><strong>{j.nom}</strong></td>
+                                                <td>{j.nationalite}</td>
+                                                <td>{j.experience_annees} ans</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    {selectedCourse && (
+                        <div className="modal-overlay" onClick={() => setSelectedCourse(null)}>
+                            <div className="modal-content glass-panel" onClick={e => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h3>Résultats de la Course : {selectedCourse.nom}</h3>
+                                    <button className="modal-close" onClick={() => setSelectedCourse(null)}>&times;</button>
+                                </div>
+                                <p style={{color:'var(--text-muted)', marginBottom:'1.5rem'}}>
+                                    Lieu : {selectedCourse.lieu} | Distance : {selectedCourse.distance}m | Dotation : {(selectedCourse.prix_millimes / 1000).toLocaleString('fr-FR')} DT
+                                </p>
+                                <h4>Classement Officiel</h4>
+                                <div className="table-responsive">
+                                    <table className="custom-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Rang</th>
+                                                <th>Cheval</th>
+                                                <th>Race</th>
+                                                <th>Jockey</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {participations.length === 0 ? (
+                                                <tr><td colSpan="4">Aucun résultat enregistré pour cette course.</td></tr>
+                                            ) : (
+                                                participations.map(p => (
+                                                    <tr key={p.cheval_id}>
+                                                        <td>
+                                                            <span style={{
+                                                                background: p.classement === 1 ? '#d4af37' : p.classement === 2 ? '#bdc3c7' : p.classement === 3 ? '#cd7f32' : 'transparent',
+                                                                color: p.classement <= 3 ? '#0a110c' : 'var(--text-light)',
+                                                                padding: '0.2rem 0.6rem',
+                                                                borderRadius: '50%',
+                                                                fontWeight: 'bold'
+                                                            }}>
+                                                                {p.classement || '-'}
+                                                            </span>
+                                                        </td>
+                                                        <td><strong>{p.cheval_nom}</strong></td>
+                                                        <td>{p.cheval_race}</td>
+                                                        <td>{p.jockey_nom || 'Non spécifié'}</td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // Main App Layout
+        function App() {
+            const [tab, setTab] = useState('home');
+
+            return (
+                <div style={{display:'flex', flexDirection:'column', minHeight:'100vh'}}>
+                    {/* Header */}
+                    <header className="app-header glass-panel" style={{borderRadius: '0 0 24px 24px', borderTop:'none'}}>
+                        <div className="nav-container">
+                            <div className="logo-section">
+                                <span className="logo-icon">🐎</span>
+                                <h1>Tunisie Horses</h1>
+                            </div>
+                            <nav>
+                                <ul className="nav-tabs">
+                                    <li><button className={`nav-tab-btn ${tab === 'home' ? 'active' : ''}`} onClick={() => setTab('home')}>Accueil</button></li>
+                                    <li><button className={`nav-tab-btn ${tab === 'races' ? 'active' : ''}`} onClick={() => setTab('races')}>Races Tunisiennes</button></li>
+                                    <li><button className={`nav-tab-btn ${tab === 'chevaux' ? 'active' : ''}`} onClick={() => setTab('chevaux')}>Chevaux</button></li>
+                                    <li><button className={`nav-tab-btn ${tab === 'proprietaires' ? 'active' : ''}`} onClick={() => setTab('proprietaires')}>Propriétaires</button></li>
+                                    <li><button className={`nav-tab-btn ${tab === 'courses' ? 'active' : ''}`} onClick={() => setTab('courses')}>Courses</button></li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </header>
+
+                    {/* Main Content Area */}
+                    <main className="app-main">
+                        {tab === 'home' && <HomeView setTab={setTab} />}
+                        {tab === 'races' && <RacesView />}
+                        
+                        {/* Dynamic Pages imported from external JSX */}
+                        {tab === 'chevaux' && window.ChevauxPage && <window.ChevauxPage />}
+                        {tab === 'proprietaires' && window.OwnersPage && <window.OwnersPage />}
+                        {tab === 'courses' && <CoursesView />}
+                    </main>
+
+                    {/* Footer */}
+                    <footer className="app-footer">
+                        <div className="footer-content">
+                            <div className="footer-logo">
+                                <span>🐎 Tunisie Horses</span>
+                            </div>
+                            <div className="footer-links">
+                                <span>Partenaire : Haras de Sidi Thabet</span>
+                                <span>•</span>
+                                <span>Données : FNARC</span>
+                                <span>•</span>
+                                <span>Projet MVC PHP React</span>
+                            </div>
+                            <div className="footer-copyright">
+                                &copy; {new Date().getFullYear()} Tunisie Horses. Tous droits réservés. Célébration du patrimoine équestre national.
+                            </div>
+                        </div>
+                    </footer>
+                </div>
+            );
+        }
+
+        // Render App once DOM is ready
+        const root = ReactDOM.createRoot(document.getElementById('app-root'));
+        root.render(<App />);
+    </script>
+
 </body>
 </html>

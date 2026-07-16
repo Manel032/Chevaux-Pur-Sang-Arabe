@@ -1,245 +1,220 @@
 <?php
+// Cheval.php - Model for Cheval
+
+require_once 'database.php';
+
 class Cheval {
+    // Fetch all horses with optional filtering (breed, gender, search query)
+    public static function getAll($filters = []) {
+        $db = Database::getConnection();
+        
+        $sql = "SELECT c.*, o.nom AS owner_nom, 
+                       p.nom AS pere_nom, m.nom AS mere_nom
+                FROM cheval c
+                LEFT JOIN owner o ON c.owner_id = o.id
+                LEFT JOIN cheval p ON c.pere_id = p.id
+                LEFT JOIN cheval m ON c.mere_id = m.id
+                WHERE 1=1";
+        
+        $params = array();
 
-    private PDO $db;
-
-    public function __construct(PDO $db){
-        $this->db = $db;
-    }
-
-    /* =========================
-       READ – Tous les chevaux
-    ========================== */
-    public function all(){
-        $sql = "
-        SELECT c.*,
-               o.nom AS owner,
-               j.nom AS jockey
-        FROM chevaux c
-        LEFT JOIN owners o ON c.owner_id = o.id
-        LEFT JOIN jockeys j ON c.jockey_id = j.id
-        ORDER BY c.id DESC
-        ";
-        return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    /* =========================
-       READ – Un cheval
-    ========================== */
-    public function show(int $id){
-        $stmt = $this->db->prepare("SELECT * FROM chevaux WHERE id = ?");
-        $stmt->execute([$id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    /* =========================
-       CREATE – Ajouter
-    ========================== */
-    public function create(array $data){
-        $sql = "
-        INSERT INTO chevaux
-        (nom, age, ddn, pays_origine, pays_vie, owner_id, jockey_id)
-        VALUES
-        (:nom, :age, :ddn, :po, :pv, :owner, :jockey)
-        ";
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
-            ":nom"    => $data["nom"],
-            ":age"    => $data["age"],
-            ":ddn"    => $data["ddn"],
-            ":po"     => $data["pays_origine"],
-            ":pv"     => $data["pays_vie"],
-            ":owner"  => $data["owner_id"],
-            ":jockey" => $data["jockey_id"]
-        ]);
-    }
-
-    /* =========================
-       UPDATE – Simple
-    ========================== */
-    public function update(int $id, array $data){
-        $sql = "
-        UPDATE chevaux SET
-            nom = :nom,
-            age = :age,
-            pays_origine = :po,
-            pays_vie = :pv
-        WHERE id = :id
-        ";
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
-            ":nom" => $data["nom"],
-            ":age" => $data["age"],
-            ":po"  => $data["pays_origine"],
-            ":pv"  => $data["pays_vie"],
-            ":id"  => $id
-        ]);
-    }
-
-    /* =========================
-       UPDATE – COMPLET
-    ========================== */
-    public function updateFull(int $id, array $data){
-        $sql = "
-        UPDATE chevaux SET
-            nom = :nom,
-            age = :age,
-            ddn = :ddn,
-            pays_origine = :po,
-            pays_vie = :pv,
-            owner_id = :owner,
-            jockey_id = :jockey
-        WHERE id = :id
-        ";
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
-            ":nom"    => $data["nom"],
-            ":age"    => $data["age"],
-            ":ddn"    => $data["ddn"],
-            ":po"     => $data["pays_origine"],
-            ":pv"     => $data["pays_vie"],
-            ":owner"  => $data["owner_id"],
-            ":jockey" => $data["jockey_id"],
-            ":id"     => $id
-        ]);
-    }
-
-    /* =========================
-       DELETE
-    ========================== */
-    public function delete(int $id){
-        $stmt = $this->db->prepare("DELETE FROM chevaux WHERE id = ?");
-        return $stmt->execute([$id]);
-    }
-
-    /* =========================
-       UPLOAD IMAGE
-    ========================== */
-    public function updateImage(int $id, string $image){
-        $stmt = $this->db->prepare(
-            "UPDATE chevaux SET image = ? WHERE id = ?"
-        );
-        return $stmt->execute([$image, $id]);
-    }
-
-    /* =========================
-       RECHERCHE AVANCÉE
-    ========================== */
-    public function search(array $filters){
-        $sql = "SELECT * FROM chevaux WHERE 1=1";
-        $params = [];
-
-        if (!empty($filters["nom"])) {
-            $sql .= " AND nom LIKE ?";
-            $params[] = "%" . $filters["nom"] . "%";
+        if (!empty($filters['race'])) {
+            $sql .= " AND c.race = :race";
+            $params[':race'] = $filters['race'];
         }
 
-        if (!empty($filters["pays_origine"])) {
-            $sql .= " AND pays_origine = ?";
-            $params[] = $filters["pays_origine"];
+        if (!empty($filters['sexe'])) {
+            $sql .= " AND c.sexe = :sexe";
+            $params[':sexe'] = $filters['sexe'];
         }
 
-        if (!empty($filters["owner_id"])) {
-            $sql .= " AND owner_id = ?";
-            $params[] = $filters["owner_id"];
+        if (!empty($filters['search'])) {
+            $sql .= " AND (c.nom LIKE :search OR c.robe LIKE :search OR o.nom LIKE :search)";
+            $params[':search'] = '%' . $filters['search'] . '%';
         }
 
-        if (!empty($filters["jockey_id"])) {
-            $sql .= " AND jockey_id = ?";
-            $params[] = $filters["jockey_id"];
-        }
-
-        $stmt = $this->db->prepare($sql);
+        $sql .= " ORDER BY c.nom ASC";
+        
+        $stmt = $db->prepare($sql);
         $stmt->execute($params);
-
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll();
     }
 
-    /* =========================
-       STATISTIQUES
-    ========================== */
-    public function stats(){
-        return [
-            "total" => $this->db->query("SELECT COUNT(*) FROM chevaux")->fetchColumn(),
-            "pays"  => $this->db->query("
-                SELECT pays_origine, COUNT(*) total
-                FROM chevaux
-                GROUP BY pays_origine
-            ")->fetchAll(PDO::FETCH_ASSOC)
-        ];
+    // Fetch a single horse by ID, including details of owner and parents
+    public static function getById($id) {
+        $db = Database::getConnection();
+        
+        $sql = "SELECT c.*, o.nom AS owner_nom, o.telephone AS owner_tel, o.email AS owner_email,
+                       p.nom AS pere_nom, m.nom AS mere_nom
+                FROM cheval c
+                LEFT JOIN owner o ON c.owner_id = o.id
+                LEFT JOIN cheval p ON c.pere_id = p.id
+                LEFT JOIN cheval m ON c.mere_id = m.id
+                WHERE c.id = :id";
+                
+        $stmt = $db->prepare($sql);
+        $stmt->execute(array(':id' => $id));
+        return $stmt->fetch();
     }
 
-    /* =========================
-       DERNIERS CHEVAUX AJOUTÉS
-    ========================== */
-    public function latest(int $limit = 5){
-        $sql = "
-        SELECT c.*,
-               o.nom AS owner,
-               j.nom AS jockey
-        FROM chevaux c
-        LEFT JOIN owners o ON c.owner_id = o.id
-        LEFT JOIN jockeys j ON c.jockey_id = j.id
-        ORDER BY c.id DESC
-        LIMIT ?
-        ";
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindValue(1, $limit, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Insert a new horse record
+    public static function create($data) {
+        $db = Database::getConnection();
+        
+        $sql = "INSERT INTO cheval (nom, race, sexe, date_naissance, robe, pere_id, mere_id, owner_id, image_url)
+                VALUES (:nom, :race, :sexe, :date_naissance, :robe, :pere_id, :mere_id, :owner_id, :image_url)";
+                
+        $stmt = $db->prepare($sql);
+        $stmt->execute(array(
+            ':nom' => $data['nom'],
+            ':race' => $data['race'],
+            ':sexe' => $data['sexe'],
+            ':date_naissance' => !empty($data['date_naissance']) ? $data['date_naissance'] : null,
+            ':robe' => !empty($data['robe']) ? $data['robe'] : null,
+            ':pere_id' => !empty($data['pere_id']) ? (int)$data['pere_id'] : null,
+            ':mere_id' => !empty($data['mere_id']) ? (int)$data['mere_id'] : null,
+            ':owner_id' => !empty($data['owner_id']) ? (int)$data['owner_id'] : null,
+            ':image_url' => !empty($data['image_url']) ? $data['image_url'] : null
+        ));
+        
+        return $db->lastInsertId();
     }
 
-    /* =========================
-       CHEVAUX AVEC PLUS DE GAINS
-    ========================== */
-    public function topGains(int $limit = 5){
-        $sql = "
-        SELECT c.*, SUM(co.gains) as total_gains
-        FROM chevaux c
-        LEFT JOIN courses co ON co.cheval_id = c.id
-        GROUP BY c.id
-        ORDER BY total_gains DESC
-        LIMIT ?
-        ";
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindValue(1, $limit, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Update an existing horse record
+    public static function update($id, $data) {
+        $db = Database::getConnection();
+        
+        $sql = "UPDATE cheval SET 
+                    nom = :nom, 
+                    race = :race, 
+                    sexe = :sexe, 
+                    date_naissance = :date_naissance, 
+                    robe = :robe, 
+                    pere_id = :pere_id, 
+                    mere_id = :mere_id, 
+                    owner_id = :owner_id, 
+                    image_url = :image_url
+                WHERE id = :id";
+                
+        $stmt = $db->prepare($sql);
+        return $stmt->execute(array(
+            ':id' => (int)$id,
+            ':nom' => $data['nom'],
+            ':race' => $data['race'],
+            ':sexe' => $data['sexe'],
+            ':date_naissance' => !empty($data['date_naissance']) ? $data['date_naissance'] : null,
+            ':robe' => !empty($data['robe']) ? $data['robe'] : null,
+            ':pere_id' => !empty($data['pere_id']) ? (int)$data['pere_id'] : null,
+            ':mere_id' => !empty($data['mere_id']) ? (int)$data['mere_id'] : null,
+            ':owner_id' => !empty($data['owner_id']) ? (int)$data['owner_id'] : null,
+            ':image_url' => !empty($data['image_url']) ? $data['image_url'] : null
+        ));
     }
 
-    /* =========================
-       CHEVAL AVEC TOUTES SES COURSES
-    ========================== */
-    public function withCourses(int $id){
-        $sql = "
-        SELECT c.*, co.nom AS course_nom, co.date, co.trophée, co.gains
-        FROM chevaux c
-        LEFT JOIN courses co ON co.cheval_id = c.id
-        WHERE c.id = ?
-        ORDER BY co.date DESC
-        ";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$id]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Delete a horse record
+    public static function delete($id) {
+        $db = Database::getConnection();
+        $stmt = $db->prepare("DELETE FROM cheval WHERE id = :id");
+        return $stmt->execute(array(':id' => (int)$id));
     }
 
-    /* =========================
-       CHEVAUX PAR OWNER
-    ========================== */
-    public function byOwner(int $owner_id){
-        $sql = "
-        SELECT c.*,
-               o.nom AS owner,
-               j.nom AS jockey
-        FROM chevaux c
-        LEFT JOIN owners o ON c.owner_id = o.id
-        LEFT JOIN jockeys j ON c.jockey_id = j.id
-        WHERE c.owner_id = ?
-        ORDER BY c.nom ASC
-        ";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$owner_id]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Get list of potential fathers (males)
+    public static function getEligibleFathers($excludeId = null) {
+        $db = Database::getConnection();
+        $sql = "SELECT id, nom, race FROM cheval WHERE sexe = 'Mâle'";
+        $params = array();
+        if ($excludeId) {
+            $sql .= " AND id != :id";
+            $params[':id'] = $excludeId;
+        }
+        $sql .= " ORDER BY nom ASC";
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    // Get list of potential mothers (females)
+    public static function getEligibleMothers($excludeId = null) {
+        $db = Database::getConnection();
+        $sql = "SELECT id, nom, race FROM cheval WHERE sexe = 'Femelle'";
+        $params = array();
+        if ($excludeId) {
+            $sql .= " AND id != :id";
+            $params[':id'] = $excludeId;
+        }
+        $sql .= " ORDER BY nom ASC";
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    // Fetch the 3-generation pedigree tree for a horse
+    public static function getPedigreeTree($id) {
+        $horse = self::getBasicInfo($id);
+        if (!$horse) return null;
+
+        // Level 1: Horse itself
+        $tree = array(
+            'id' => $horse['id'],
+            'nom' => $horse['nom'],
+            'race' => $horse['race'],
+            'sexe' => $horse['sexe'],
+            'father' => null,
+            'mother' => null
+        );
+
+        // Level 2: Parents
+        if ($horse['pere_id']) {
+            $father = self::getBasicInfo($horse['pere_id']);
+            if ($father) {
+                $tree['father'] = array(
+                    'id' => $father['id'],
+                    'nom' => $father['nom'],
+                    'race' => $father['race'],
+                    'sexe' => $father['sexe'],
+                    'father' => null,
+                    'mother' => null
+                );
+                // Level 3: Paternal Grandparents
+                if ($father['pere_id']) {
+                    $tree['father']['father'] = self::getBasicInfo($father['pere_id']);
+                }
+                if ($father['mere_id']) {
+                    $tree['father']['mother'] = self::getBasicInfo($father['mere_id']);
+                }
+            }
+        }
+
+        if ($horse['mere_id']) {
+            $mother = self::getBasicInfo($horse['mere_id']);
+            if ($mother) {
+                $tree['mother'] = array(
+                    'id' => $mother['id'],
+                    'nom' => $mother['nom'],
+                    'race' => $mother['race'],
+                    'sexe' => $mother['sexe'],
+                    'father' => null,
+                    'mother' => null
+                );
+                // Level 3: Maternal Grandparents
+                if ($mother['pere_id']) {
+                    $tree['mother']['father'] = self::getBasicInfo($mother['pere_id']);
+                }
+                if ($mother['mere_id']) {
+                    $tree['mother']['mother'] = self::getBasicInfo($mother['mere_id']);
+                }
+            }
+        }
+
+        return $tree;
+    }
+
+    // Private helper for pedigree lookup
+    private static function getBasicInfo($id) {
+        if (!$id) return null;
+        $db = Database::getConnection();
+        $stmt = $db->prepare("SELECT id, nom, race, sexe, pere_id, mere_id FROM cheval WHERE id = :id");
+        $stmt->execute(array(':id' => $id));
+        return $stmt->fetch();
     }
 }
-?> 
